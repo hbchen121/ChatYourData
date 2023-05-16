@@ -10,16 +10,10 @@ export const auth = {
     state: initialState,
     actions: {
         login({commit}, user) {
-            console.log("1logsuccess")
-            console.log("1auth.js", user)
             return login(user).then(
                 user => {
-                    console.log("logsuccess")
                     user = localStorage.getItem('user')
-                    console.log("auth.js", user)
                     commit('loginSuccess', user);
-                    console.log("auth.js-state1", this.state)
-                    console.log("auth.js-state", user)
                     return Promise.resolve(user);
                 },
                 error => {
@@ -50,17 +44,14 @@ export const auth = {
           console.log("in logsuccess", state, user)
             state.status.loggedIn = true;
             state.user = user;
-            this.$store.getters['auth/user']
         },
         loginFailure(state) {
             state.status.loggedIn = false;
             state.user = null;
-            this.$store.getters['auth/user']
         },
         logout(state) {
             state.status.loggedIn = false;
             state.user = null;
-            this.$store.getters['auth/user']
         },
         registerSuccess(state) {
             state.status.loggedIn = false;
@@ -83,9 +74,9 @@ async function login(user) {
         })
         .then((data) => {
             if (data.access_token) {
-                console.log("data", data)
+                console.log("token data", data)
                 localStorage.setItem('user', JSON.stringify(data));
-                console.log("data-user", user)
+                console.log("token data-user", user)
                 return data; // 添加返回值，返回 data 对象
             }else {
                 throw 'Access token not found';

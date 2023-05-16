@@ -86,7 +86,7 @@ function query() {
   })
   showLastMessage()
   msgLoading.value = true
-  fetchQuery(active.value.doc_id, input.value).then(res => {
+  fetchQuery(active.value.doc_id, input.value, user).then(res => {
     messages.value.push({
       content: res?.data?.response || '',
       role: 'chatdata'
@@ -141,7 +141,10 @@ const onerror = (e) => {
       <div style="overflow-y: scroll;">
         <div class="user-info">
 <!--          <el-avatar :size="30" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"/>-->
-          <span class="user-name">{{ "用户名: " + user.username.slice(0, 8) + "*" }}</span>
+          <span class="user-name">
+<!--            {{ "用户名: " + user.username.slice(0, 12) + "*" }}-->
+            用户名：{{ user.username.length > 12 ? user.username.slice(0, 11) + '*' : user.username }}
+          </span>
           <Logout @uploadSuccess="uploadSuccess"/>
         </div>
         <div class="api-info">

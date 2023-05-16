@@ -16,7 +16,7 @@ from database.db_docs import Docs
 from database.db_msg import Msg
 from database.db_user import Users
 from starlette.middleware.cors import CORSMiddleware
-from ChatData.doc_util import Doc, set_api_key, get_api_key
+from chatdata.doc_util import Doc
 from utils.structs import AddLink, Apikey, User
 from models import UserModel, TokenData, UserWithHashModel
 from utils.passwords import verify
@@ -24,7 +24,9 @@ import ipdb
 
 
 app = FastAPI()
-origins = ["http://127.0.0.1", "http://localhost:5173", "http://0.0.0.0:5173"]
+origins = ["http://127.0.0.1", "http://localhost:5173", "http://0.0.0.0:5173",
+           "http://chenhaobo.fun:5173", "http://101.42.32.28:5173",
+           "http://10.254.104.58:5173/"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -75,11 +77,12 @@ async def handle(background_task: BackgroundTasks, file: UploadFile, user: str =
         data = await file.read()
         doc_id = hashlib.md5((username + str(data)).encode('utf8')).hexdigest()
         filename = file.filename
-        doc = Doc(doc_id=doc_id, filename=filename)
+        api_key = Users.get_by_username(username)["api_key"]
+        doc = Doc(doc_id=doc_id, filename=filename, openai_api_key=api_key)
         await doc.save(content=data)
         Docs(uid=0, username=username, doc_id=doc_id, doc_name=filename, doc_type=file.content_type,
              size=size).insert()
-        background_task.add_task(file_task, doc_id)
+        background_task.add_task(file_task, doc_id, username)
         return {"message": "success", 'time': time.time() - start, 'filename': filename}
     except Exception as e:
         print(e)
@@ -97,7 +100,7 @@ async def handle(background_task: BackgroundTasks, link: AddLink):
         Docs(username=username, uid=0, doc_id=doc_id, doc_name=link.link, doc_type='web', size=0).insert()
         # print("add link task")
         # ipdb.set_trace()
-        background_task.add_task(file_task, doc_id)
+        background_task.add_task(file_task, doc_id, username)
         # print("add link add task")
         return {"message": "success", 'time': time.time() - start}
     except Exception as e:
@@ -129,7 +132,7 @@ async def handle(api_key: Apikey):
 async def handle(user: User):
     username = user.user.username
     info = Users.get_by_username(username)
-    # print("my api_key info", info)
+    print("my api_key info", info)
     if info:
         return {"data": info["api_key"]}
     else:
@@ -137,11 +140,14 @@ async def handle(user: User):
 
 
 @app.get("/ask/{doc_id}")
-async def handle(doc_id, question):
+async def handle(doc_id, question, user):
     asyncio.get_running_loop().set_debug(True)
     try:
+        username = json.loads(user)["username"]
+        # username = user.user.username
+        info = Users.get_by_username(username)
         res = Docs.get_by_doc_id(doc_id=doc_id)
-        doc = Doc(doc_id=doc_id, filename=res['doc_name'])
+        doc = Doc(doc_id=doc_id, filename=res['doc_name'], openai_api_key=info["api_key"])
         Msg(uid=0, doc_id=doc_id, role="user", content=question).insert()
         res = doc.query(question=question)
         print(res.response)
@@ -158,24 +164,24 @@ async def handle(doc_id):
     return {"data": res, "doc_id": doc_id}
 
 
-def file_task(doc_id: str):
+def file_task(doc_id: str, username: str):
     # ipdb.set_trace()
     # print(f"file_task {doc_id} start")
     res = Docs.get_by_doc_id(doc_id=doc_id)
     if res == None:
         print(f"file_task {doc_id} none")
         return
-
-    # doc = Doc(doc_id=res['doc_id'], filename=res['doc_name'])
-    # doc.build_txt(res['doc_type'])
+    info = Users.get_by_username(username)
+    doc = Doc(doc_id=res['doc_id'], filename=res['doc_name'], openai_api_key=info["api_key"])
+    doc.build_txt(res['doc_type'])
     res['state'] = 1
     Docs(**res).update()
 
-    # doc.build_index(res["doc_type"])
+    doc.build_index(res["doc_type"])
     res['state'] = 2
     # print(res)
     Docs(**res).update()
-    # print(f"file_task {doc_id} done")
+    print(f"file_task {doc_id} done")
 
 
 def get_user(username: str, password: str = ''):
@@ -252,12 +258,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             "token_type": "bearer",
             "username": user.username}
     return response
-
-# Routes
-@app.get("/")
-# def read_root(current_user: UserModel = Depends(get_current_active_user)):
-def read_root(current_user: UserModel = Depends()):
-    return {"result": "Hello world"}
 
 
 if __name__ == '__main__':

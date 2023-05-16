@@ -35,9 +35,9 @@ export async function fetchDocList(user) {
     })
 }
 
-export async function fetchQuery(doc_id, query) {
+export async function fetchQuery(doc_id, query, user) {
     return new Promise((resolve, reject) => {
-        myFetch("/api/ask/" + doc_id + "?question=" + query).then(res => resolve(res)).catch(e => reject(e))
+        myFetch("/api/ask/" + doc_id + "?question=" + query + "&user=" + JSON.stringify(user)).then(res => resolve(res)).catch(e => reject(e))
     })
 }
 

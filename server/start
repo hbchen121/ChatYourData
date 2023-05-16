@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+echo "Starting Python server..."
+mkdir -p data
+
+# set proxy port
+export HTTP_PROXY=http://127.0.0.1:8889
+export HTTP_PROXY=http://127.0.0.1:8889
+
+
+#PYTHONASYNCIODEBUG=1 \
+PYTHONPATH="$(dirname $0)":$PYTHONPATH \
+python3 \
+main.py

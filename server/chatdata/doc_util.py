@@ -17,11 +17,22 @@ logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 OPENAI_API_KEY = "OPENAI_API_KEY"
 # OPENAI_API_KEY = ""
 
+# QUESTION_ANSWER_PROMPT_TMPL_2 = """
+# You are an AI assistant providing helpful advice. You are given the following extracted parts of a long document and a question. Provide a conversational answer based on the context provided.
+# If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer.
+# If the question is not related to the context, politely respond that you are tuned to only answer questions that are related to the context.
+# Context information is below.
+# =========
+# {context_str}
+# =========
+# {query_str}
+# """
+
 QUESTION_ANSWER_PROMPT_TMPL_2 = """
-You are an AI assistant providing helpful advice. You are given the following extracted parts of a long document and a question. Provide a conversational answer based on the context provided.
-If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer.
-If the question is not related to the context, politely respond that you are tuned to only answer questions that are related to the context.
-Context information is below.
+您是提供有用建议的 AI 助手。 您将获得一份长文档的以下提取部分和一个问题。 根据提供的上下文提供对话答案。
+如果您在下面的上下文中找不到答案，不要试图编造答案，
+你可以尝试从你已有知识中进行回答，你需要说“根据提供内容我不确定答案，但根据我已有知识可以知道：”。
+上下文信息如下。
 =========
 {context_str}
 =========
@@ -29,7 +40,8 @@ Context information is below.
 """
 
 QA_PROMPT_TMPL = (
-    "Context information is below. \n"
+    # "Context information is below. \n"
+    "上下文信息如下. \n"
     "---------------------\n"
     "{context_str}"
     "\n---------------------\n"
@@ -37,44 +49,21 @@ QA_PROMPT_TMPL = (
 )
 
 
-def set_api_key(api_key):
-    global OPENAI_API_KEY
-    OPENAI_API_KEY = api_key
-    api_file = "api_key.txt"
-    api_file_path = osp.join(BASE_DIR, api_file)
-    with open(api_file_path, "w") as f:
-        f.write(OPENAI_API_KEY)
-
-
-def load_api_key():
-    api_file = "api_key.txt"
-    api_file_path = osp.join(BASE_DIR, api_file)
-    if not osp.isfile(api_file_path):
-        return ""
-    with open(api_file_path, "r") as f:
-        api_key = f.read()
-    return api_key
-
-def get_api_key():
-    global OPENAI_API_KEY
-    OPENAI_API_KEY = OPENAI_API_KEY or load_api_key()
-    return OPENAI_API_KEY
-
-
 def build_service_context(openai_api_key):
-    llm_predictor = LLMPredictor(
-        llm=OpenAI(temperature=0, model_name="text-davinci-002", openai_api_key=openai_api_key))
-    # llm_predictor = LLMPredictor(llm=ChatOpenAI(
-    #     temperature=0.2, model_name="gpt-3.5-turbo"))
+    # llm_predictor = LLMPredictor(
+    #     llm=OpenAI(temperature=0, model_name="text-davinci-002", openai_api_key=openai_api_key))
+    llm_predictor = LLMPredictor(llm=OpenAI(
+        temperature=0.2, model_name="gpt-3.5-turbo", openai_api_key=openai_api_key))
     service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
     return service_context
+
 
 class Doc:
     def __init__(
             self,
             doc_id: str,
-            filename: str = "",
-            openai_api_key: str = "",
+            filename: str = '',
+            openai_api_key: str = '',
     ) -> None:
         self.dir_name = doc_id
 
@@ -86,11 +75,9 @@ class Doc:
         self.file_path = osp.join(BASE_DIR, self.dir_name, filename)
         self.data_file = osp.join(BASE_DIR, self.dir_name, "data.txt")
         self.index_file = osp.join(BASE_DIR, self.dir_name, "index.json")
-        print(full_dir)
-
-        # self.openai_api_key = openai_api_key or get_api_key()
-        # print(self.openai_api_key)
-        # self.service_context = build_service_context(self.openai_api_key)
+        self.openai_api_key = openai_api_key
+        print(self.openai_api_key)
+        self.service_context = build_service_context(self.openai_api_key)
 
     async def save(self, content: bytes):
         with open(self.file_path, "wb") as f:

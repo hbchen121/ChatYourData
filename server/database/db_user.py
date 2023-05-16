@@ -26,7 +26,7 @@ class Users:
         docs = self.get_by_username(self.username)
         if docs is not None:
             return self
-        print('username', self.username)
+        print('create username', self.username)
         if self.password == '':
             print("password is empty")
             return None
@@ -49,6 +49,7 @@ class Users:
         """
         db_info = self.get_by_username(self.username)
         if db_info is None:
+            print(f"get {self.username} info error")
             return
         self.password = password or db_info["password"]
         self.token = token or db_info["token"]
@@ -56,6 +57,7 @@ class Users:
         self.__cursor.execute('UPDATE users SET password = ?, token = ?, api_key = ? WHERE username = ?',
                               (self.password, self.token, self.api_key, self.username))
         self.__conn.commit()
+        print(f"update {self.username} success")
 
     # 从数据库中获取所有对象
     @staticmethod
@@ -117,3 +119,10 @@ def token2user(token):
     if info is None:
         return info
     return Users(**info)
+
+
+if __name__ == '__main__':
+    a = Users(0, "test", "test")
+    a.create()
+    users = Users.get_all()
+    print(users)
