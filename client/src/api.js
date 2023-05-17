@@ -27,7 +27,7 @@ export async function fetchDocList(user) {
     return new Promise((resolve, reject) => {
         myFetch("/api/my_docs", {
             method: "POST",
-            body: JSON.stringify({ user: user }),
+            body: JSON.stringify({user: user}),
             headers: {
                 "Content-Type": "application/json",
             }
@@ -49,15 +49,15 @@ export async function fetchMsg(doc_id) {
 
 export async function fetchDelDoc(doc_id) {
     return new Promise((resolve, reject) => {
-        myFetch("/api/del/" + doc_id, { method: "DELETE" }).then(res => resolve(res)).catch(e => reject(e))
+        myFetch("/api/del/" + doc_id, {method: "DELETE"}).then(res => resolve(res)).catch(e => reject(e))
     })
 }
 
 export async function addAddLink(link, user) {
     return new Promise((resolve, reject) => {
         myFetch("/api/add_link", {
-            method: "POST", 
-            body: JSON.stringify({ link: link, user: user }),
+            method: "POST",
+            body: JSON.stringify({link: link, user: user}),
             headers: {
                 "Content-Type": "application/json",
             }
@@ -69,7 +69,7 @@ export async function addApikey(api_key, user) {
     return new Promise((resolve, reject) => {
         myFetch("/api/add_apikey", {
             method: "POST",
-            body: JSON.stringify({ apikey: api_key, user: user }),
+            body: JSON.stringify({apikey: api_key, user: user}),
             headers: {
                 "Content-Type": "application/json",
             }
@@ -87,7 +87,7 @@ export async function fetchApikey(user) {
     return new Promise((resolve, reject) => {
         myFetch("/api/my_apikey", {
             method: "POST",
-            body: JSON.stringify({ user: user }),
+            body: JSON.stringify({user: user}),
             headers: {
                 "Content-Type": "application/json",
             }
@@ -97,13 +97,21 @@ export async function fetchApikey(user) {
 
 
 function apiUrl() {
-  return 'http://localhost:8000/';
+    return 'http://localhost:8001/';
 }
 
 export function postApi(pathToResource, data) {
-  return fetch(apiUrl() + pathToResource, {
-    method: 'POST',
-    mode: 'cors',
-    body: new URLSearchParams(data),
-  });
+    // return fetch(apiUrl() + pathToResource, {
+    //   method: 'POST',
+    //   mode: 'cors',
+    //   body: new URLSearchParams(data),
+    // });
+    return fetch("/api/" + pathToResource, {
+        method: "POST",
+        body: new URLSearchParams(data),
+        // headers: {
+        //     "Content-Type": "application/json",
+        // }
+    })
 }
+

@@ -15,7 +15,7 @@ export default {
     beforeUpload(rawFile) {
       if (!this.supportFileType.includes(rawFile.type)) {
         console.log(rawFile.type);
-        ElMessage.error('仅支持 .pdf, .epub, .md, .txt 类型文件');
+        ElMessage.error('仅支持 .pdf, .epub, .txt 类型文件');
         return false;
       } else if (rawFile.size / 1024 / 1024 > 2) {
         ElMessage.error('文件大小不能超过 2MB!');
