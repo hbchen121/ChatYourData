@@ -8,7 +8,7 @@ ChatYourData ([github](https://github.com/hbchen121/ChatYourData)) 是一个基�
 
 ## ChatYourData 特点
 
-- 网页部署地址：[待续]()
+- 网页部署地址：[link](http://101.42.32.28:5173/)（域名待续中）
 - 通过 ChatYourData 可以使 ChatGPT 学习到用户私有知识；
 - ChatYourData 需要用户使用自己的 OPEN API KEY，在无须魔法的情况下，也能与 ChatGPT 对话；
 
