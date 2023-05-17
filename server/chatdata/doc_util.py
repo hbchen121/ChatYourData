@@ -14,8 +14,6 @@ import docx2txt
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-OPENAI_API_KEY = "OPENAI_API_KEY"
-# OPENAI_API_KEY = ""
 
 # QUESTION_ANSWER_PROMPT_TMPL_2 = """
 # You are an AI assistant providing helpful advice. You are given the following extracted parts of a long document and a question. Provide a conversational answer based on the context provided.
@@ -181,8 +179,15 @@ class Doc:
 
 
 if __name__ == '__main__':
+    import os
+
+    OPENAI_API_KEY = ""
+
+    os.environ['HTTP_PROXY'] = "http://127.0.0.1:8889"
+    os.environ['HTTPS_PROXY'] = "http://127.0.0.1:8889"
+    os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
     size = 10
-    filename = "../requirements.txt"
+    filename = "requirements.txt"
     # with open(filename, "rb") as f:
     #     data = f.read()
     # doc_id = hashlib.md5(data).hexdigest()
@@ -193,3 +198,5 @@ if __name__ == '__main__':
     index = GPTSimpleVectorIndex.from_documents(documents)
     import IPython
     IPython.embed()
+
+    #  PYTHONPATH="$(dirname $0)":$PYTHONPATH python3 chatdata/doc_util.py
